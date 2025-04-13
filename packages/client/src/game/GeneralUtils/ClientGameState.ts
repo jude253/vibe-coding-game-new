@@ -33,5 +33,9 @@ export class ClientGameState {
     public getDeltaTime(): number {
       return this.deltaTime;
     }
+  
+    public getFrames(): number {
+      return this.frames;
+    }
   }
   

@@ -8,6 +8,7 @@ export class Player {
   private moveRight: boolean = false;
   private moveUp: boolean = false;
   private moveDown: boolean = false;
+  private jumpPressed: boolean = false;
   private velocity: THREE.Vector3 = new THREE.Vector3();
   private direction: THREE.Vector3 = new THREE.Vector3();
   private tempVector: THREE.Vector3 = new THREE.Vector3();
@@ -31,34 +32,62 @@ export class Player {
     return this.camera;
   }
 
-  public setMoveForward(value: boolean): void {
-    this.moveForward = value;
+  public getMoveForward(): boolean {
+    return this.moveForward;
   }
 
-  public setMoveBackward(value: boolean): void {
-    this.moveBackward = value;
+  public getMoveBackward(): boolean {
+    return this.moveBackward;
   }
 
-  public setMoveLeft(value: boolean): void {
-    this.moveLeft = value;
+  public getMoveLeft(): boolean {
+    return this.moveLeft;
   }
 
-  public setMoveRight(value: boolean): void {
-    this.moveRight = value;
+  public getMoveRight(): boolean {
+    return this.moveRight;
   }
 
-  public setMoveUp(value: boolean): void {
-    this.moveUp = value;
+  public getJumpPressed(): boolean {
+    return this.jumpPressed;
   }
 
-  public setMoveDown(value: boolean): void {
-    this.moveDown = value;
+  public getVelocity(): THREE.Vector3 {
+    return this.velocity.clone();
+  }
+
+  public setMoveForward(move: boolean): void {
+    this.moveForward = move;
+  }
+
+  public setMoveBackward(move: boolean): void {
+    this.moveBackward = move;
+  }
+
+  public setMoveLeft(move: boolean): void {
+    this.moveLeft = move;
+  }
+
+  public setMoveRight(move: boolean): void {
+    this.moveRight = move;
+  }
+
+  public setMoveUp(move: boolean): void {
+    this.moveUp = move;
+  }
+
+  public setMoveDown(move: boolean): void {
+    this.moveDown = move;
   }
 
   public jump(): void {
     if (this.isGrounded) {
       this.verticalVelocity = this.jumpForce;
       this.isGrounded = false;
+      this.jumpPressed = true;
+      setTimeout(() => {
+        this.jumpPressed = false;
+      }, 100); // Reset jumpPressed after 100ms
     }
   }
 

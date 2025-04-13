@@ -3,18 +3,27 @@ import { Player } from './GameObjects/Player';
 import { GroundPlane } from './GameObjects/GroundPlane';
 import { FpsWidget } from './UI/FpsWidget';
 import { ClientGameState } from './GeneralUtils/ClientGameState';
+import { NetworkManager } from './NetworkManager';
 
 export class GameScene {
   private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private player: Player;
   private groundPlane: GroundPlane;
   private isPointerLocked: boolean = false;
   private fpsWidget: FpsWidget;
   private gameState: ClientGameState;
+  private networkManager: NetworkManager;
 
   constructor() {
     this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.domElement.style.position = 'fixed';
@@ -31,6 +40,7 @@ export class GameScene {
     this.groundPlane = new GroundPlane(100, 100);
     this.fpsWidget = new FpsWidget();
     this.gameState = new ClientGameState();
+    this.networkManager = new NetworkManager(this.player);
   }
 
   public start(): void {
@@ -144,11 +154,49 @@ export class GameScene {
     
     // Update game state
     this.gameState.update();
+    const deltaTime = this.gameState.getDeltaTime();
+
+    // Store current input and state for prediction
+    this.networkManager.storeInput();
+    this.networkManager.storeState();
+
+    // Update player movement
+    this.player.move(deltaTime);
+
+    // Simulate server update if enabled
+    if (import.meta.env.VITE_ENABLE_NETWORK_SIMULATION === "1" && this.gameState.getFrames() % 6 === 0) {
+      this.simulateServerUpdate();
+    }
+
+    // Update camera position
+    this.camera.position.copy(this.player.getCamera().position);
+    this.camera.rotation.copy(this.player.getCamera().rotation);
+
+    // Render scene
+    this.renderer.render(this.scene, this.camera);
+
+    // Update FPS display
+    const fpsElement = document.getElementById('fps');
+    if (fpsElement) {
+      fpsElement.textContent = `FPS: ${this.gameState.getFps()}`;
+    }
+  }
+
+  // Simulate receiving server state (for testing)
+  private simulateServerUpdate(): void {
+    // In a real game, this would come from the server
+    const serverState = {
+      position: this.player.getCamera().position.clone(),
+      velocity: this.player.getVelocity().clone(),
+      timestamp: Date.now()
+    };
     
-    // Update game objects with delta time
-    this.player.move(this.gameState.getDeltaTime());
-    this.renderer.render(this.scene, this.player.getCamera());
-    this.fpsWidget.update(this.gameState.getFps());
+    // Add some random noise to simulate network conditions
+    // Increased the noise slightly to make the prediction more noticeable
+    serverState.position.x += (Math.random() - 0.5) * 0.2;
+    serverState.position.z += (Math.random() - 0.5) * 0.2;
+    
+    this.networkManager.reconcile(serverState);
   }
 
   public dispose(): void {
