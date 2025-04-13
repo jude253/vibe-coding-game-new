@@ -19,13 +19,17 @@ class ClientGameState {
     this.frames++;
     this.currentTime = performance.now();
     
+    // Calculate delta time first
+    this.deltaTime = (this.currentTime - this.lastTime) / 1000; // Convert to seconds
+    
+    // Then update FPS counter
     if (this.currentTime - this.lastTime >= 1000) {
       this.fps = Math.round((this.frames * 1000) / (this.currentTime - this.lastTime));
       this.frames = 0;
       this.lastTime = this.currentTime;
+    } else {
+      this.lastTime = this.currentTime;
     }
-
-    this.deltaTime = (this.currentTime - this.lastTime) / 1000; // Convert to seconds
   }
 
   public getFps(): number {

@@ -12,7 +12,7 @@ export class Player {
   private target: THREE.Vector3 = new THREE.Vector3(0, 0, -1);
   private verticalAngle: number = 0;
   private horizontalAngle: number = 0;
-  private readonly movementSpeed: number = 0.005; // Units per second
+  private readonly movementSpeed: number = 0.5; // Units per second
   private readonly dampingFactor: number = 0.95;
 
   constructor() {
