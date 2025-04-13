@@ -28,4 +28,8 @@ export class GroundPlane {
   public getGroundY(): number {
     return this.plane.position.y;
   }
+
+  public getMesh(): THREE.Mesh {
+    return this.plane;
+  }
 } 

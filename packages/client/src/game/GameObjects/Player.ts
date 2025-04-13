@@ -163,4 +163,8 @@ export class Player {
       this.isGrounded = true;
     }
   }
+
+  public setPosition(position: THREE.Vector3): void {
+    this.camera.position.copy(position);
+  }
 } 

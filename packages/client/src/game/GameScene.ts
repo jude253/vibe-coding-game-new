@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { Player } from './gameObjects/Player';
 import { GroundPlane } from './gameObjects/GroundPlane';
+import { Obstacle } from './gameObjects/Obstacle';
 import { NetworkManager } from './managers/NetworkManager';
 import { PlayerManager } from './managers/PlayerManager';
+import { CollisionManager } from './managers/CollisionManager';
 import { FpsWidget } from './ui/FpsWidget';
 import { ClientGameState } from './utils/ClientGameState';
 
@@ -12,8 +14,10 @@ export class GameScene {
   private renderer: THREE.WebGLRenderer;
   private player: Player;
   private groundPlane: GroundPlane;
+  private obstacles: Obstacle[];
   private networkManager: NetworkManager;
   private playerManager: PlayerManager;
+  private collisionManager: CollisionManager;
   private gameState: ClientGameState;
   private fpsWidget: FpsWidget;
   private isPointerLocked: boolean = false;
@@ -43,10 +47,19 @@ export class GameScene {
     this.player = new Player();
     this.groundPlane = new GroundPlane();
 
+    // Initialize obstacles
+    this.obstacles = [
+      new Obstacle(new THREE.Vector3(5, 0.5, 0)),
+      new Obstacle(new THREE.Vector3(-5, 0.5, 0)),
+      new Obstacle(new THREE.Vector3(0, 0.5, 5)),
+      new Obstacle(new THREE.Vector3(0, 0.5, -5))
+    ];
+
     // Initialize managers
     this.playerManager = new PlayerManager(this.scene);
     this.playerManager.setLocalPlayer(this.player);
     this.networkManager = new NetworkManager(this.player);
+    this.collisionManager = new CollisionManager();
     this.gameState = new ClientGameState();
     this.fpsWidget = new FpsWidget();
 
@@ -56,6 +69,16 @@ export class GameScene {
 
   public start(): void {
     this.groundPlane.addToScene(this.scene);
+    
+    // Add obstacles to scene and collision manager
+    this.obstacles.forEach(obstacle => {
+      obstacle.addToScene(this.scene);
+      this.collisionManager.addObstacle(obstacle);
+    });
+    
+    // Add local player to collision manager
+    this.collisionManager.addPlayer('local', this.player);
+    
     this.setupScene();
     this.setupControls();
     this.update();
@@ -70,26 +93,6 @@ export class GameScene {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(5, 5, 5);
     this.scene.add(directionalLight);
-
-    // Add reference cubes
-    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    
-    const cube1 = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube1.position.set(5, 0.5, 0);
-    this.scene.add(cube1);
-
-    const cube2 = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube2.position.set(-5, 0.5, 0);
-    this.scene.add(cube2);
-
-    const cube3 = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube3.position.set(0, 0.5, 5);
-    this.scene.add(cube3);
-
-    const cube4 = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube4.position.set(0, 0.5, -5);
-    this.scene.add(cube4);
   }
 
   private setupControls(): void {
@@ -184,6 +187,9 @@ export class GameScene {
 
     // Update player movement
     this.player.move(deltaTime);
+
+    // Check and resolve collisions
+    this.collisionManager.update();
 
     // Simulate server update if enabled
     if (import.meta.env.VITE_ENABLE_NETWORK_SIMULATION === "1" && this.gameState.getFrames() % 6 === 0) {
