@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { Player } from './gameObjects/Player';
 import { GroundPlane } from './gameObjects/GroundPlane';
+import { NetworkManager } from './managers/NetworkManager';
+import { PlayerManager } from './managers/PlayerManager';
 import { FpsWidget } from './ui/FpsWidget';
 import { ClientGameState } from './utils/ClientGameState';
-import { NetworkManager } from './managers/NetworkManager';
 
 export class GameScene {
   private scene: THREE.Scene;
@@ -11,10 +12,11 @@ export class GameScene {
   private renderer: THREE.WebGLRenderer;
   private player: Player;
   private groundPlane: GroundPlane;
-  private isPointerLocked: boolean = false;
-  private fpsWidget: FpsWidget;
-  private gameState: ClientGameState;
   private networkManager: NetworkManager;
+  private playerManager: PlayerManager;
+  private gameState: ClientGameState;
+  private fpsWidget: FpsWidget;
+  private isPointerLocked: boolean = false;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -36,14 +38,20 @@ export class GameScene {
     document.body.style.overflow = 'hidden';
     document.body.appendChild(this.renderer.domElement);
 
+    // Initialize game objects
     this.player = new Player();
-    this.groundPlane = new GroundPlane(100, 100);
-    this.fpsWidget = new FpsWidget();
-    this.gameState = new ClientGameState();
+    this.groundPlane = new GroundPlane();
+
+    // Initialize managers
+    this.playerManager = new PlayerManager(this.scene);
+    this.playerManager.setLocalPlayer(this.player);
     this.networkManager = new NetworkManager(this.player);
+    this.gameState = new ClientGameState();
+    this.fpsWidget = new FpsWidget();
   }
 
   public start(): void {
+    this.groundPlane.addToScene(this.scene);
     this.setupScene();
     this.setupControls();
     this.update();
@@ -58,9 +66,6 @@ export class GameScene {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(5, 5, 5);
     this.scene.add(directionalLight);
-
-    // Add ground plane
-    this.groundPlane.addToScene(this.scene);
 
     // Add reference cubes
     const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -147,11 +152,17 @@ export class GameScene {
     document.addEventListener('pointerlockchange', () => {
       this.isPointerLocked = document.pointerLockElement === this.renderer.domElement;
     });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && this.isPointerLocked) {
+        document.exitPointerLock();
+      }
+    });
   }
 
   private update(): void {
     requestAnimationFrame(() => this.update());
-    
+
     // Update game state
     this.gameState.update();
     const deltaTime = this.gameState.getDeltaTime();
@@ -168,6 +179,9 @@ export class GameScene {
       this.simulateServerUpdate();
     }
 
+    // Update all players
+    this.playerManager.update(deltaTime);
+
     // Update camera position
     this.camera.position.copy(this.player.getCamera().position);
     this.camera.rotation.copy(this.player.getCamera().rotation);
@@ -183,7 +197,7 @@ export class GameScene {
 
   // Simulate receiving server state (for testing)
   private simulateServerUpdate(): void {
-    // In a real game, this would come from the server
+    // Simulate local player update
     const serverState = {
       position: this.player.getCamera().position.clone(),
       velocity: this.player.getVelocity().clone(),
@@ -191,11 +205,33 @@ export class GameScene {
     };
     
     // Add some random noise to simulate network conditions
-    // Increased the noise slightly to make the prediction more noticeable
     serverState.position.x += (Math.random() - 0.5) * 0.2;
     serverState.position.z += (Math.random() - 0.5) * 0.2;
     
     this.networkManager.reconcile(serverState);
+
+    // Simulate remote player updates
+    this.simulateRemotePlayers();
+  }
+
+  private simulateRemotePlayers(): void {
+    // In a real game, this would come from the server
+    const remotePlayerData = {
+      position: new THREE.Vector3(
+        Math.sin(Date.now() * 0.001) * 5,
+        1.6,
+        Math.cos(Date.now() * 0.001) * 5
+      ),
+      rotation: new THREE.Quaternion(),
+      timestamp: Date.now()
+    };
+
+    // Update or create remote player
+    const playerId = "remote1";
+    if (!this.playerManager.getRemotePlayers().has(playerId)) {
+      this.playerManager.addRemotePlayer(playerId);
+    }
+    this.playerManager.updateRemotePlayer(playerId, remotePlayerData);
   }
 
   public dispose(): void {
