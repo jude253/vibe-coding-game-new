@@ -5,30 +5,29 @@ import { FpsWidget } from './UI/FpsWidget';
 
 class ClientGameState {
   private frames: number = 0;
-  private lastTime: number = 0;
-  private currentTime: number = 0;
+  private lastFpsUpdate: number = 0;
+  private lastFrameTime: number = 0;
   private fps: number = 0;
   private deltaTime: number = 0;
 
   constructor() {
-    this.lastTime = performance.now();
-    this.currentTime = this.lastTime;
+    this.lastFpsUpdate = performance.now();
+    this.lastFrameTime = this.lastFpsUpdate;
   }
 
   public update(): void {
+    const currentTime = performance.now();
+    
+    // Calculate delta time for this frame
+    this.deltaTime = (currentTime - this.lastFrameTime) / 1000;
+    this.lastFrameTime = currentTime;
+    
+    // Update FPS counter
     this.frames++;
-    this.currentTime = performance.now();
-    
-    // Calculate delta time first
-    this.deltaTime = (this.currentTime - this.lastTime) / 1000; // Convert to seconds
-    
-    // Then update FPS counter
-    if (this.currentTime - this.lastTime >= 1000) {
-      this.fps = Math.round((this.frames * 1000) / (this.currentTime - this.lastTime));
+    if (currentTime - this.lastFpsUpdate >= 1000) {
+      this.fps = Math.round(this.frames);
       this.frames = 0;
-      this.lastTime = this.currentTime;
-    } else {
-      this.lastTime = this.currentTime;
+      this.lastFpsUpdate = currentTime;
     }
   }
 
