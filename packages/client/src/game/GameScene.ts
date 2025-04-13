@@ -17,6 +17,7 @@ export class GameScene {
   private gameState: ClientGameState;
   private fpsWidget: FpsWidget;
   private isPointerLocked: boolean = false;
+  private mouseSensitivity: number;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -48,6 +49,9 @@ export class GameScene {
     this.networkManager = new NetworkManager(this.player);
     this.gameState = new ClientGameState();
     this.fpsWidget = new FpsWidget();
+
+    // Set mouse sensitivity from environment variable or default to 0.002
+    this.mouseSensitivity = parseFloat(import.meta.env.VITE_MOUSE_SENSITIVITY || "0.002");
   }
 
   public start(): void {
@@ -138,7 +142,14 @@ export class GameScene {
     // Handle mouse movement
     document.addEventListener('mousemove', (event) => {
       if (this.isPointerLocked) {
-        this.player.rotateCamera(event.movementX * 0.002, -event.movementY * 0.002);
+        const movementX = event.movementX || 0;
+        const movementY = event.movementY || 0;
+        
+        // Apply mouse sensitivity to movement
+        this.player.rotateCamera(
+          movementX * this.mouseSensitivity,
+          movementY * -1 * this.mouseSensitivity
+        );
       }
     });
 
