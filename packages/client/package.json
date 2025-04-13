@@ -12,16 +12,17 @@
   },
   "dependencies": {
     "@vibe/shared": "workspace:*",
-    "three": "^0.160.0"
+    "three": "^0.161.0"
   },
   "devDependencies": {
-    "@types/three": "^0.160.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "jest": "^29.5.0",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.3.0",
-    "vite": "^5.0.0"
+    "@types/three": "^0.161.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.4"
   }
 } 
