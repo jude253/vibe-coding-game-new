@@ -1,0 +1,26 @@
+{
+  "name": "@vibe/z-infra",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "pnpm install && tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "clean": "rm -rf dist node_modules tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@vibe/shared": "workspace:*",
+    "@vibe/client": "workspace:*",
+    "@vibe/server": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.17.30",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.8.3"
+  }
+} 
