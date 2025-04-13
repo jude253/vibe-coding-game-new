@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Player } from './GameObjects/Player';
+import { Player } from '../GameObjects/Player';
 
 interface PlayerInput {
   forward: boolean;

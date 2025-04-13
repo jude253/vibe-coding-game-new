@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { Player } from './GameObjects/Player';
-import { GroundPlane } from './GameObjects/GroundPlane';
-import { FpsWidget } from './UI/FpsWidget';
-import { ClientGameState } from './GeneralUtils/ClientGameState';
-import { NetworkManager } from './NetworkManager';
+import { Player } from './gameObjects/Player';
+import { GroundPlane } from './gameObjects/GroundPlane';
+import { FpsWidget } from './ui/FpsWidget';
+import { ClientGameState } from './utils/ClientGameState';
+import { NetworkManager } from './managers/NetworkManager';
 
 export class GameScene {
   private scene: THREE.Scene;
@@ -175,10 +175,9 @@ export class GameScene {
     // Render scene
     this.renderer.render(this.scene, this.camera);
 
-    // Update FPS display
-    const fpsElement = document.getElementById('fps');
-    if (fpsElement) {
-      fpsElement.textContent = `FPS: ${this.gameState.getFps()}`;
+    // Update FPS display if enabled
+    if (import.meta.env.VITE_SHOW_FPS === "1") {
+      this.fpsWidget.update(this.gameState.getFps());
     }
   }
 
