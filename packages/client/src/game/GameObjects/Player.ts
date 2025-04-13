@@ -12,6 +12,8 @@ export class Player {
   private target: THREE.Vector3 = new THREE.Vector3(0, 0, -1);
   private verticalAngle: number = 0;
   private horizontalAngle: number = 0;
+  private readonly movementSpeed: number = 0.005; // Units per second
+  private readonly dampingFactor: number = 0.95;
 
   constructor() {
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -59,10 +61,10 @@ export class Player {
                       this.camera.position.z + this.target.z);
   }
 
-  public move(speed: number): void {
+  public move(deltaTime: number): void {
     // Apply damping to velocity
-    this.velocity.x -= this.velocity.x * 0.1;
-    this.velocity.z -= this.velocity.z * 0.1;
+    this.velocity.x *= this.dampingFactor;
+    this.velocity.z *= this.dampingFactor;
 
     // Get the camera's forward and right vectors
     const forward = new THREE.Vector3();
@@ -88,8 +90,9 @@ export class Player {
       this.tempVector.normalize();
     }
 
-    // Apply movement
+    // Apply movement with delta time
     if (this.moveForward || this.moveBackward || this.moveLeft || this.moveRight) {
+      const speed = this.movementSpeed * deltaTime;
       this.velocity.x += this.tempVector.x * speed;
       this.velocity.z += this.tempVector.z * speed;
     }

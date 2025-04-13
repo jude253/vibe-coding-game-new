@@ -1,6 +1,41 @@
 import * as THREE from 'three';
 import { Player } from './GameObjects/Player';
 import { GroundPlane } from './GameObjects/GroundPlane';
+import { FpsWidget } from './UI/FpsWidget';
+
+class ClientGameState {
+  private frames: number = 0;
+  private lastTime: number = 0;
+  private currentTime: number = 0;
+  private fps: number = 0;
+  private deltaTime: number = 0;
+
+  constructor() {
+    this.lastTime = performance.now();
+    this.currentTime = this.lastTime;
+  }
+
+  public update(): void {
+    this.frames++;
+    this.currentTime = performance.now();
+    
+    if (this.currentTime - this.lastTime >= 1000) {
+      this.fps = Math.round((this.frames * 1000) / (this.currentTime - this.lastTime));
+      this.frames = 0;
+      this.lastTime = this.currentTime;
+    }
+
+    this.deltaTime = (this.currentTime - this.lastTime) / 1000; // Convert to seconds
+  }
+
+  public getFps(): number {
+    return this.fps;
+  }
+
+  public getDeltaTime(): number {
+    return this.deltaTime;
+  }
+}
 
 export class GameScene {
   private scene: THREE.Scene;
@@ -8,6 +43,8 @@ export class GameScene {
   private player: Player;
   private groundPlane: GroundPlane;
   private isPointerLocked: boolean = false;
+  private fpsWidget: FpsWidget;
+  private gameState: ClientGameState;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -25,10 +62,14 @@ export class GameScene {
 
     this.player = new Player();
     this.groundPlane = new GroundPlane(100, 100);
+    this.fpsWidget = new FpsWidget();
+    this.gameState = new ClientGameState();
+  }
 
+  public start(): void {
     this.setupScene();
     this.setupControls();
-    this.animate();
+    this.update();
   }
 
   private setupScene(): void {
@@ -112,9 +153,19 @@ export class GameScene {
     });
   }
 
-  private animate(): void {
-    requestAnimationFrame(() => this.animate());
-    this.player.move(0.1);
+  private update(): void {
+    requestAnimationFrame(() => this.update());
+    
+    // Update game state
+    this.gameState.update();
+    
+    // Update game objects with delta time
+    this.player.move(this.gameState.getDeltaTime());
     this.renderer.render(this.scene, this.player.getCamera());
+    this.fpsWidget.update(this.gameState.getFps());
+  }
+
+  public dispose(): void {
+    this.fpsWidget.dispose();
   }
 } 
