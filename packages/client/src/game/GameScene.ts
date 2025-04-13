@@ -85,19 +85,38 @@ export class GameScene {
     // Handle keyboard input
     document.addEventListener('keydown', (event) => {
       switch (event.code) {
-        case 'KeyW': this.player.setMoveForward(true); break;
-        case 'KeyS': this.player.setMoveBackward(true); break;
-        case 'KeyA': this.player.setMoveLeft(true); break;
-        case 'KeyD': this.player.setMoveRight(true); break;
+        case 'KeyW':
+          this.player.setMoveForward(true);
+          break;
+        case 'KeyS':
+          this.player.setMoveBackward(true);
+          break;
+        case 'KeyA':
+          this.player.setMoveLeft(true);
+          break;
+        case 'KeyD':
+          this.player.setMoveRight(true);
+          break;
+        case 'Space':
+          this.player.jump();
+          break;
       }
     });
 
     document.addEventListener('keyup', (event) => {
       switch (event.code) {
-        case 'KeyW': this.player.setMoveForward(false); break;
-        case 'KeyS': this.player.setMoveBackward(false); break;
-        case 'KeyA': this.player.setMoveLeft(false); break;
-        case 'KeyD': this.player.setMoveRight(false); break;
+        case 'KeyW':
+          this.player.setMoveForward(false);
+          break;
+        case 'KeyS':
+          this.player.setMoveBackward(false);
+          break;
+        case 'KeyA':
+          this.player.setMoveLeft(false);
+          break;
+        case 'KeyD':
+          this.player.setMoveRight(false);
+          break;
       }
     });
 

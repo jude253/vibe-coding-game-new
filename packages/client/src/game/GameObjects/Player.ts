@@ -6,6 +6,8 @@ export class Player {
   private moveBackward: boolean = false;
   private moveLeft: boolean = false;
   private moveRight: boolean = false;
+  private moveUp: boolean = false;
+  private moveDown: boolean = false;
   private velocity: THREE.Vector3 = new THREE.Vector3();
   private direction: THREE.Vector3 = new THREE.Vector3();
   private tempVector: THREE.Vector3 = new THREE.Vector3();
@@ -14,10 +16,15 @@ export class Player {
   private horizontalAngle: number = 0;
   private readonly movementSpeed: number = 0.5; // Units per second
   private readonly dampingFactor: number = 0.95;
+  private isGrounded: boolean = true;
+  private verticalVelocity: number = 0;
+  private readonly gravity: number = -9.8; // Gravity in units per second squared
+  private readonly jumpForce: number = 5.0; // Jump force in units per second
+  private readonly groundY: number = 1.6; // Player's height when grounded
 
   constructor() {
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.set(0, 1.6, 0);
+    this.camera.position.y = this.groundY;
   }
 
   public getCamera(): THREE.PerspectiveCamera {
@@ -38,6 +45,21 @@ export class Player {
 
   public setMoveRight(value: boolean): void {
     this.moveRight = value;
+  }
+
+  public setMoveUp(value: boolean): void {
+    this.moveUp = value;
+  }
+
+  public setMoveDown(value: boolean): void {
+    this.moveDown = value;
+  }
+
+  public jump(): void {
+    if (this.isGrounded) {
+      this.verticalVelocity = this.jumpForce;
+      this.isGrounded = false;
+    }
   }
 
   public rotateCamera(deltaX: number, deltaY: number): void {
@@ -97,8 +119,19 @@ export class Player {
       this.velocity.z += this.tempVector.z * speed;
     }
 
+    // Apply gravity and jumping
+    this.verticalVelocity += this.gravity * deltaTime;
+    
     // Update position
     this.camera.position.x += this.velocity.x;
     this.camera.position.z += this.velocity.z;
+    this.camera.position.y += this.verticalVelocity * deltaTime;
+
+    // Check if player has landed
+    if (this.camera.position.y <= this.groundY) {
+      this.camera.position.y = this.groundY;
+      this.verticalVelocity = 0;
+      this.isGrounded = true;
+    }
   }
 } 
